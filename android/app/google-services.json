@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "577494993263",
+    "project_id": "mentor-c8e50",
+    "storage_bucket": "mentor-c8e50.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:577494993263:android:fb471da3a9a45213cc809a",
+        "android_client_info": {
+          "package_name": "com.example.randevu_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAACL-ZLW0Q3qrEre008MSZok8SRndv7Fw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
