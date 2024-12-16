@@ -3,10 +3,47 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'add_appointment_screen.dart';
 import 'package:intl/intl.dart';
 
-class RandevularimPage extends StatelessWidget {
+class RandevularimPage extends StatefulWidget {
   final String ogrenciId;
 
   RandevularimPage({required this.ogrenciId});
+
+  @override
+  _RandevularimPageState createState() => _RandevularimPageState();
+}
+
+class _RandevularimPageState extends State<RandevularimPage> {
+
+  @override
+  void initState() {
+    super.initState();
+    // Sayfa yüklendiğinde randevuları güncelle
+    updateAppointmentsStatus(widget.ogrenciId);
+  }
+
+  Future<void> updateAppointmentsStatus(String ogrenciId) async {
+    try {
+      final now = DateTime.now();
+
+      final appointmentsSnapshot = await FirebaseFirestore.instance
+          .collection('Randevular')
+          .where('studentId', isEqualTo: ogrenciId)
+          .where('status', isEqualTo: 'Aktif')  // Sadece aktif olanları güncelle
+          .get();
+
+      for (var doc in appointmentsSnapshot.docs) {
+        final appointmentData = doc.data();
+        final appointmentDate = (appointmentData['appointmentDate'] as Timestamp).toDate();
+
+        // Eğer tarih geçmişse, durumu 'Geçmiş' olarak güncelle
+        if (appointmentDate.isBefore(now)) {
+          await doc.reference.update({'status': 'Geçmiş'});
+        }
+      }
+    } catch (e) {
+      print('Randevu durumu güncellenirken bir hata oluştu: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +65,7 @@ class RandevularimPage extends StatelessWidget {
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('Randevular')
-                  .where('studentId', isEqualTo: ogrenciId)
+                  .where('studentId', isEqualTo: widget.ogrenciId)
                   .where('status', isEqualTo: 'Aktif')
                   .snapshots(),
               builder: (context, snapshot) {
@@ -65,7 +102,7 @@ class RandevularimPage extends StatelessWidget {
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('Randevular')
-                  .where('studentId', isEqualTo: ogrenciId)
+                  .where('studentId', isEqualTo: widget.ogrenciId)
                   .where('status', isEqualTo: 'Geçmiş')
                   .snapshots(),
               builder: (context, snapshot) {

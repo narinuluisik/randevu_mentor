@@ -12,6 +12,7 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
   String? selectedMentorId;
   String? selectedMentorName;
   DateTime? selectedDate;
+  TimeOfDay? selectedTime;
 
   @override
   void initState() {
@@ -43,7 +44,7 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
 
   // Randevu ekle
   Future<void> addAppointment() async {
-    if (selectedMentorId == null || selectedDate == null) {
+    if (selectedMentorId == null || selectedDate == null || selectedTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lütfen tüm alanları doldurun')),
       );
@@ -51,10 +52,19 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
     }
 
     try {
+      // Tarih ve saati birleştiriyoruz
+      DateTime appointmentDateTime = DateTime(
+        selectedDate!.year,
+        selectedDate!.month,
+        selectedDate!.day,
+        selectedTime!.hour,
+        selectedTime!.minute,
+      );
+
       await FirebaseFirestore.instance.collection('Randevular').add({
         'mentorId': selectedMentorId,
         'mentorName': selectedMentorName,
-        'appointmentDate': selectedDate,
+        'appointmentDate': appointmentDateTime,
         'createdAt': DateTime.now().toIso8601String(),
         'studentId': 'ogrenciId', // Öğrenci ID'si
         'status': 'Aktif', // Randevu durumu
@@ -69,6 +79,18 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
         SnackBar(content: Text('Randevu eklenirken bir hata oluştu: $e')),
       );
     }
+  }
+
+  // Saat seçici
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: selectedTime ?? TimeOfDay.now(),
+    );
+    if (picked != null && picked != selectedTime)
+      setState(() {
+        selectedTime = picked;
+      });
   }
 
   @override
@@ -130,6 +152,22 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
                     ? DateFormat('dd/MM/yyyy').format(selectedDate!)
                     : '',
               ),
+            ),
+            SizedBox(height: 16),
+
+            // Saat seçimi
+            Row(
+              children: [
+                Text(
+                  selectedTime == null
+                      ? 'Saat Seçin'
+                      : selectedTime!.format(context),
+                ),
+                IconButton(
+                  icon: Icon(Icons.access_time),
+                  onPressed: () => _selectTime(context),
+                ),
+              ],
             ),
             SizedBox(height: 24),
 
