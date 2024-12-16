@@ -17,8 +17,8 @@ class Randevu {
     return Randevu(
       ogrenciId: data['ogrenciId'],
       mentorId: data['mentorId'],
-      tarih: (data['tarih'] as Timestamp).toDate(),
-      randevuDurum: data['randevuDurum'],
+      tarih: (data['appointmentDate'] as Timestamp).toDate(),
+      randevuDurum: data['status'],
     );
   }
 
@@ -26,8 +26,8 @@ class Randevu {
     return {
       'ogrenciId': ogrenciId,
       'mentorId': mentorId,
-      'tarih': tarih,
-      'randevuDurum': randevuDurum,
+      'appointmentDate': tarih,
+      'status': randevuDurum,
     };
   }
 }

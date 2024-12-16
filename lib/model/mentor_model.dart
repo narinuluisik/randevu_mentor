@@ -1,45 +1,43 @@
 class Mentor {
   final String mentorId;
-  final String mentorAd;
-  final String mentorSoyad;
-  final String mentorResimUrl;
-  final String sector; // Yeni alan: Sector
-  final String universite; // Yeni alan: Universite
-  final String deneyim; // Yeni alan: Deneyim
+  final String name;
+  final String email;
+  final String expertise;
+  final String university;
+  final String sector;
+  final String profileImage;
 
   Mentor({
     required this.mentorId,
-    required this.mentorAd,
-    required this.mentorSoyad,
-    required this.mentorResimUrl,
+    required this.name,
+    required this.email,
+    required this.expertise,
+    required this.university,
     required this.sector,
-    required this.universite,
-    required this.deneyim,
+    required this.profileImage,
   });
 
-  // Firestore'dan veri alırken bu fonksiyon kullanılabilir
-  factory Mentor.fromFirestore(Map<String, dynamic> data) {
+  factory Mentor.fromFirestore(Map<String, dynamic> firestoreData) {
     return Mentor(
-      mentorId: data['mentorId'],
-      mentorAd: data['mentorAd'],
-      mentorSoyad: data['mentorSoyad'],
-      mentorResimUrl: data['mentorResimUrl'] ?? '',
-      sector: data['sector'] ?? '', // Yeni alan
-      universite: data['universite'] ?? '', // Yeni alan
-      deneyim: data['deneyim'] ?? '', // Yeni alan
+      mentorId: firestoreData['mentorId'],
+      name: firestoreData['name'],
+      email: firestoreData['email'],
+      expertise: firestoreData['expertise'],
+      university: firestoreData['university'],
+      sector: firestoreData['sector'],
+      profileImage: firestoreData['profileImage'] ?? 'https://www.w3schools.com/w3images/avatar2.png', // Varsayılan resim
     );
   }
 
-  // Firestore'a veri yazarken bu fonksiyon kullanılabilir
   Map<String, dynamic> toMap() {
     return {
       'mentorId': mentorId,
-      'mentorAd': mentorAd,
-      'mentorSoyad': mentorSoyad,
-      'mentorResimUrl': mentorResimUrl,
-      'sector': sector, // Yeni alan
-      'universite': universite, // Yeni alan
-      'deneyim': deneyim, // Yeni alan
+      'name': name,
+      'email': email,
+      'expertise': expertise,
+      'university': university,
+      'sector': sector,
+      'profileImage': profileImage,
     };
   }
 }
