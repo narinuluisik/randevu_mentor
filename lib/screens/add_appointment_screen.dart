@@ -8,43 +8,45 @@ class AddAppointmentScreen extends StatefulWidget {
 }
 
 class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
-  List<Map<String, dynamic>> matchedMentors = [];
-  String? selectedMentorId;
-  String? selectedMentorName;
+  Map<String, dynamic>? matchedMentor;  // Eşleşen mentör bilgileri
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
 
   @override
   void initState() {
     super.initState();
-    fetchMatchedMentors();
+    fetchMatchedMentor();
   }
 
-  // Mentörleri al
-  Future<void> fetchMatchedMentors() async {
+  // Eşleşen mentörü al
+  Future<void> fetchMatchedMentor() async {
     try {
-      final matchesSnapshot = await FirebaseFirestore.instance.collection('matches').get();
-      setState(() {
-        matchedMentors = matchesSnapshot.docs.map((doc) {
-          final data = doc.data();
-          return {
-            'id': doc.id,
-            'mentorId': data['mentor']?['mentorId'],
-            'mentorName': data['mentor']?['name'],
+      // Burada eşleşen mentörün bilgilerini alıyoruz (örneğin, ilk eşleşeni alabiliriz)
+      final matchesSnapshot = await FirebaseFirestore.instance.collection('matches').limit(1).get();
+      if (matchesSnapshot.docs.isNotEmpty) {
+        final mentorData = matchesSnapshot.docs.first.data();
+        setState(() {
+          matchedMentor = {
+            'mentorId': mentorData['mentor']?['mentorId'],
+            'mentorName': mentorData['mentor']?['name'],
+            'mentorBio': mentorData['mentor']?['bio'],  // Mentör biyografisi
+            'uzmanlikAlani': mentorData['mentor']?['uzmanlikAlani'],  // Mentör uzmanlık alanı
+            'sektor': mentorData['mentor']?['sektor'],  // Mentör sektör
+            'profileImageUrl': mentorData['mentor']?['profileImageUrl'],  // Mentör fotoğrafı
           };
-        }).where((mentor) => mentor['mentorId'] != null && mentor['mentorName'] != null).toList();
-      });
+        });
+      }
     } catch (e) {
       print('Hata: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Mentörler alınırken bir hata oluştu: $e')),
+        SnackBar(content: Text('Mentör bilgileri alınırken bir hata oluştu: $e')),
       );
     }
   }
 
   // Randevu ekle
   Future<void> addAppointment() async {
-    if (selectedMentorId == null || selectedDate == null || selectedTime == null) {
+    if (matchedMentor == null || selectedDate == null || selectedTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lütfen tüm alanları doldurun')),
       );
@@ -62,8 +64,8 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
       );
 
       await FirebaseFirestore.instance.collection('Randevular').add({
-        'mentorId': selectedMentorId,
-        'mentorName': selectedMentorName,
+        'mentorId': matchedMentor!['mentorId'],
+        'mentorName': matchedMentor!['mentorName'],
         'appointmentDate': appointmentDateTime,
         'createdAt': DateTime.now().toIso8601String(),
         'studentId': 'ogrenciId', // Öğrenci ID'si
@@ -97,42 +99,89 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Randevu Ekle'),
+        title: Text('Randevu Ekle', style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white)),
         centerTitle: true,
+        backgroundColor: Colors.purple, // Mor tonları
       ),
-      body: matchedMentors.isEmpty
+      body: matchedMentor == null
           ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
           children: [
-            // Mentör seçimi
-            DropdownButton<String>(
-              isExpanded: true,
-              hint: Text('Mentör Seçin'),
-              value: selectedMentorId,
-              items: matchedMentors.map((mentor) {
-                return DropdownMenuItem<String>(
-                  value: mentor['mentorId'],
-                  child: Text(mentor['mentorName']),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  selectedMentorId = value;
-                  selectedMentorName = matchedMentors
-                      .firstWhere((mentor) => mentor['mentorId'] == value)['mentorName'];
-                });
-              },
+            // Mentör bilgileri Card içinde
+            Card(
+              elevation: 5,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              color: Colors.grey[100], // Gri tonları
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Mentör fotoğrafı
+                    CircleAvatar(
+                      radius: 60,
+                      backgroundImage: matchedMentor!['profileImageUrl'] != null
+                          ? NetworkImage(matchedMentor!['profileImageUrl'])
+                          : AssetImage('assets/default_avatar.png') as ImageProvider,
+                    ),
+                    SizedBox(height: 16),
+                    // Mentörün adı
+                    Text(
+                      matchedMentor!['mentorName'] ?? 'Mentör Adı',
+                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.purple),
+                    ),
+                    SizedBox(height: 8),
+
+                    // Sektör ve Uzmanlık Alanı Yan Yana
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Sektör
+                        Column(
+                          children: [
+                            Text(
+                              'Sektör:',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.purple),
+                            ),
+                            Text(
+                              matchedMentor!['sektor'] ?? 'Mentörün sektörü bulunmamaktadır.',
+                              style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
+                            ),
+                          ],
+                        ),
+                        SizedBox(width: 30),  // Aralarındaki boşluk
+                        // Uzmanlık Alanı
+                        Column(
+                          children: [
+                            Text(
+                              'Uzmanlık Alanı:',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.purple),
+                            ),
+                            Text(
+                              matchedMentor!['uzmanlikAlani'] ?? 'Mentörün uzmanlık alanı bulunmamaktadır.',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 24),
 
             // Tarih seçimi
             TextFormField(
               readOnly: true,
               decoration: InputDecoration(
                 labelText: 'Randevu Tarihi Seçin',
-                suffixIcon: Icon(Icons.calendar_today),
+                suffixIcon: Icon(Icons.calendar_today, color: Colors.purple),
+                border: OutlineInputBorder(),
               ),
               onTap: () async {
                 DateTime? pickedDate = await showDatePicker(
@@ -157,14 +206,16 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
 
             // Saat seçimi
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   selectedTime == null
                       ? 'Saat Seçin'
                       : selectedTime!.format(context),
+                  style: TextStyle(fontSize: 16),
                 ),
                 IconButton(
-                  icon: Icon(Icons.access_time),
+                  icon: Icon(Icons.access_time, color: Colors.purple),
                   onPressed: () => _selectTime(context),
                 ),
               ],
@@ -174,7 +225,17 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
             // Randevu ekle butonu
             ElevatedButton(
               onPressed: addAppointment,
-              child: Text('Randevu Ekle'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.purple, // Button color
+                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30), // Rounded corners
+                ),
+              ),
+              child: Text(
+                'Randevu Ekle',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,color: Colors.white),
+              ),
             ),
           ],
         ),

@@ -29,12 +29,13 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   flutter:
+
+
     sdk: flutter  # flutter SDK
   firebase_core: ^3.8.1  # firebase_core sürümünü eski bir sürüme çek
   cloud_firestore: ^5.5.1  # cloud_firestore sürümünü eski bir sürüme çek
   cupertino_icons: ^1.0.8  # iOS simgeleri
   firebase_auth: ^5.3.4
-
   intl: ^0.18.0
 
 

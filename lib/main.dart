@@ -22,7 +22,7 @@ void main() async {
 
   runApp(MyApp());
 }
-/*
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
 
 
 
-
+/*
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(); // Firebase'i başlatıyoruz.
@@ -86,7 +86,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-*/
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -101,3 +101,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+*/

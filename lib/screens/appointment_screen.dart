@@ -51,12 +51,17 @@ class _RandevularimPageState extends State<RandevularimPage> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: Text("Randevularım"),
+          title: Text("Randevularım", style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white)),
+          centerTitle: true,
+          backgroundColor: Colors.purple,
           bottom: TabBar(
             tabs: [
               Tab(text: "Aktif Randevular"),
               Tab(text: "Geçmiş Randevular"),
             ],
+            indicatorColor: Colors.white, // Sekme altı renk
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.grey,
           ),
         ),
         body: TabBarView(
@@ -76,7 +81,7 @@ class _RandevularimPageState extends State<RandevularimPage> {
                 var randevular = snapshot.data!.docs;
 
                 if (randevular.isEmpty) {
-                  return Center(child: Text("Aktif randevunuz yok"));
+                  return Center(child: Text("Aktif randevunuz yok", style: TextStyle(fontSize: 18)));
                 }
 
                 return ListView.builder(
@@ -88,10 +93,16 @@ class _RandevularimPageState extends State<RandevularimPage> {
 
                     return Card(
                       margin: EdgeInsets.all(8),
+                      elevation: 5,
+                      color: Colors.grey[50],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: ListTile(
-                        title: Text("Mentör: $mentorAd"),
-                        subtitle: Text("Tarih: ${DateFormat('dd/MM/yyyy').format(tarih)}"),
-                        trailing: Text("Saat: ${DateFormat('HH:mm').format(tarih)}"),
+                        contentPadding: EdgeInsets.all(16),
+                        title: Text("Mentör: $mentorAd", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        subtitle: Text("Tarih: ${DateFormat('dd/MM/yyyy').format(tarih)}", style: TextStyle(fontSize: 14)),
+                        trailing: Text("Saat: ${DateFormat('HH:mm').format(tarih)}", style: TextStyle(fontSize: 14)),
                       ),
                     );
                   },
@@ -113,7 +124,7 @@ class _RandevularimPageState extends State<RandevularimPage> {
                 var randevular = snapshot.data!.docs;
 
                 if (randevular.isEmpty) {
-                  return Center(child: Text("Geçmiş randevunuz yok"));
+                  return Center(child: Text("Geçmiş randevunuz yok", style: TextStyle(fontSize: 18)));
                 }
 
                 return ListView.builder(
@@ -125,10 +136,16 @@ class _RandevularimPageState extends State<RandevularimPage> {
 
                     return Card(
                       margin: EdgeInsets.all(8),
+                      elevation: 5,
+                      color: Colors.grey[200],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: ListTile(
-                        title: Text("Mentör: $mentorAd"),
-                        subtitle: Text("Tarih: ${DateFormat('dd/MM/yyyy').format(tarih)}"),
-                        trailing: Text("Saat: ${DateFormat('HH:mm').format(tarih)}"),
+                        contentPadding: EdgeInsets.all(16),
+                        title: Text("Mentör: $mentorAd", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        subtitle: Text("Tarih: ${DateFormat('dd/MM/yyyy').format(tarih)}", style: TextStyle(fontSize: 14)),
+                        trailing: Text("Saat: ${DateFormat('HH:mm').format(tarih)}", style: TextStyle(fontSize: 14)),
                       ),
                     );
                   },
@@ -146,7 +163,8 @@ class _RandevularimPageState extends State<RandevularimPage> {
               ),
             );
           },
-          child: Icon(Icons.add),
+          backgroundColor: Colors.purple, // Buton rengi
+          child: Icon(Icons.add, color: Colors.white),
         ),
       ),
     );
