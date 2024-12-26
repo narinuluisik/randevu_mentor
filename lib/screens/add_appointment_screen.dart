@@ -28,7 +28,8 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
         setState(() {
           matchedMentor = {
             'mentorId': mentorData['mentor']?['mentorId'],
-            'mentorName': mentorData['mentor']?['name'],
+            'ad': mentorData['mentor']?['ad'],
+            'soyad': mentorData['mentor']?['soyad'],
             'mentorBio': mentorData['mentor']?['bio'],  // Mentör biyografisi
             'uzmanlikAlani': mentorData['mentor']?['uzmanlikAlani'],  // Mentör uzmanlık alanı
             'sektor': mentorData['mentor']?['sektor'],  // Mentör sektör
@@ -65,7 +66,8 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
 
       await FirebaseFirestore.instance.collection('Randevular').add({
         'mentorId': matchedMentor!['mentorId'],
-        'mentorName': matchedMentor!['mentorName'],
+        'ad': matchedMentor!['ad'],
+        'soyad': matchedMentor!['soyad'],
         'appointmentDate': appointmentDateTime,
         'createdAt': DateTime.now().toIso8601String(),
         'studentId': 'ogrenciId', // Öğrenci ID'si
@@ -130,10 +132,12 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
                     ),
                     SizedBox(height: 16),
                     // Mentörün adı
-                    Text(
-                      matchedMentor!['mentorName'] ?? 'Mentör Adı',
-                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.purple),
-                    ),
+                  Text(
+                    '${matchedMentor!['ad']} ${matchedMentor!['soyad']}',
+                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.purple),
+                  ),
+
+
                     SizedBox(height: 8),
 
                     // Sektör ve Uzmanlık Alanı Yan Yana

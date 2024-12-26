@@ -1,6 +1,6 @@
 class Mentor {
   final String mentorId;
-  final String name;
+  final String ad;
   final String email;
   final String expertise;
   final String university;
@@ -9,7 +9,7 @@ class Mentor {
 
   Mentor({
     required this.mentorId,
-    required this.name,
+    required this.ad,
     required this.email,
     required this.expertise,
     required this.university,
@@ -20,7 +20,7 @@ class Mentor {
   factory Mentor.fromFirestore(Map<String, dynamic> firestoreData) {
     return Mentor(
       mentorId: firestoreData['mentorId'],
-      name: firestoreData['name'],
+      ad: firestoreData['name'],
       email: firestoreData['email'],
       expertise: firestoreData['expertise'],
       university: firestoreData['university'],
@@ -32,7 +32,7 @@ class Mentor {
   Map<String, dynamic> toMap() {
     return {
       'mentorId': mentorId,
-      'name': name,
+      'ad': ad,
       'email': email,
       'expertise': expertise,
       'university': university,

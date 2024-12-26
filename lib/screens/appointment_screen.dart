@@ -89,7 +89,7 @@ class _RandevularimPageState extends State<RandevularimPage> {
                   itemBuilder: (context, index) {
                     var randevu = randevular[index].data() as Map<String, dynamic>;
                     var tarih = (randevu['appointmentDate'] as Timestamp).toDate();
-                    var mentorAd = randevu['mentorName'];
+                    var ad = randevu['ad'];
 
                     return Card(
                       margin: EdgeInsets.all(8),
@@ -100,7 +100,7 @@ class _RandevularimPageState extends State<RandevularimPage> {
                       ),
                       child: ListTile(
                         contentPadding: EdgeInsets.all(16),
-                        title: Text("Mentör: $mentorAd", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        title: Text("Mentör: $ad", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         subtitle: Text("Tarih: ${DateFormat('dd/MM/yyyy').format(tarih)}", style: TextStyle(fontSize: 14)),
                         trailing: Text("Saat: ${DateFormat('HH:mm').format(tarih)}", style: TextStyle(fontSize: 14)),
                       ),
@@ -132,7 +132,7 @@ class _RandevularimPageState extends State<RandevularimPage> {
                   itemBuilder: (context, index) {
                     var randevu = randevular[index].data() as Map<String, dynamic>;
                     var tarih = (randevu['appointmentDate'] as Timestamp).toDate();
-                    var mentorAd = randevu['mentorName'];
+                    var ad = randevu['ad'];
 
                     return Card(
                       margin: EdgeInsets.all(8),
@@ -143,7 +143,7 @@ class _RandevularimPageState extends State<RandevularimPage> {
                       ),
                       child: ListTile(
                         contentPadding: EdgeInsets.all(16),
-                        title: Text("Mentör: $mentorAd", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        title: Text("Mentör: $ad", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         subtitle: Text("Tarih: ${DateFormat('dd/MM/yyyy').format(tarih)}", style: TextStyle(fontSize: 14)),
                         trailing: Text("Saat: ${DateFormat('HH:mm').format(tarih)}", style: TextStyle(fontSize: 14)),
                       ),

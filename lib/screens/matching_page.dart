@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-import 'matches_screen.dart'; // Eşleşme ekranını içe aktarın
+import 'matches_screen.dart';
 
-class MatchingPage extends StatefulWidget {
-  @override
-  _MatchingPageState createState() => _MatchingPageState();
-}
+class MatchingPage extends StatelessWidget {
+  final String studentId; // Öğrenci ID'si main.dart'tan geliyor
 
-class _MatchingPageState extends State<MatchingPage> {
-  // Mentör bul butonuna basıldığında eşleşme ekranına geçiş yapılacak
-  void navigateToMatchesScreen() {
+  MatchingPage({required this.studentId});
+
+  // Mentör eşleştirme ekranına geçiş
+  void navigateToMatchesScreen(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => MatchesScreen()), // MatchesScreen'e geçiş yapılıyor
+      MaterialPageRoute(
+        builder: (context) => MatchesScreen(studentId: studentId),
+      ),
     );
   }
 
@@ -23,7 +24,7 @@ class _MatchingPageState extends State<MatchingPage> {
       ),
       body: Center(
         child: ElevatedButton(
-          onPressed: navigateToMatchesScreen,
+          onPressed: () => navigateToMatchesScreen(context),
           child: Text('Mentörünü Bul'),
         ),
       ),

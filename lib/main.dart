@@ -22,7 +22,7 @@ void main() async {
 
   runApp(MyApp());
 }
-
+/*
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MatchingPage(), // Ana sayfa olarak MatchingPage kullanılıyor
+      home: MatchingPage(studentId:'RfpdBmrILPKgeEpBNA1Q'), // Ana sayfa olarak MatchingPage kullanılıyor
     );
   }
 }
@@ -40,13 +40,6 @@ class MyApp extends StatelessWidget {
 
 
 
-
-/*
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // Firebase'i başlatıyoruz.
-  runApp(MyApp());
-}
 
 class MyApp extends StatelessWidget {
   @override
@@ -58,10 +51,13 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MentorFormPage(mentorId: 'TE7HDj3cKnOAhHASLTHM',), // Burayı MentorFormPage olarak değiştiriyoruz.
+      home: MentorFormPage(mentorId: 'RqIOP1QaD3SwAgiCNCZB',), // Burayı MentorFormPage olarak değiştiriyoruz.
     );
   }
 }
+
+
+
 
 class MyApp extends StatelessWidget {
   @override
@@ -69,10 +65,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Mentör Bilgi Sistemi',
-      home: StudentFormPage(studentId: 'RfpdBmrILPKgeEpBNA1Q',),
+      home: StudentFormPage(studentId: 'fQ8iOHQwi1GTC8AwWi2P',),
     );
   }
 }
+
+
 
 class MyApp extends StatelessWidget {
   @override
@@ -86,6 +84,8 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+*/
+
 
 class MyApp extends StatelessWidget {
   @override
@@ -97,8 +97,6 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: RandevularimPage(ogrenciId: 'ogrenciId',),
+      home: RandevularimPage(ogrenciId: 'ogrenciId',)
     );
-  }
-}
-*/
+  }}
