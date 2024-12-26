@@ -1,33 +1,37 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Randevu {
-  final String ogrenciId;
+  final String id;
+  final String studentId;
   final String mentorId;
-  final DateTime tarih;
-  final String randevuDurum;
+  final DateTime appointmentDate;
+  final String status;
 
   Randevu({
-    required this.ogrenciId,
+    required this.id,
+    required this.studentId,
     required this.mentorId,
-    required this.tarih,
-    required this.randevuDurum,
+    required this.appointmentDate,
+    required this.status,
   });
 
-  factory Randevu.fromFirestore(Map<String, dynamic> data) {
+  factory Randevu.fromFirestore(Map<String, dynamic> data, {String? id}) {
     return Randevu(
-      ogrenciId: data['ogrenciId'],
-      mentorId: data['mentorId'],
-      tarih: (data['appointmentDate'] as Timestamp).toDate(),
-      randevuDurum: data['status'],
+      id: id ?? data['id'] ?? '',
+      studentId: data['studentId'] ?? '',
+      mentorId: data['mentorId'] ?? '',
+      appointmentDate: (data['appointmentDate'] as Timestamp).toDate(),
+      status: data['status'] ?? '',
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'ogrenciId': ogrenciId,
+      'id': id,
+      'studentId': studentId,
       'mentorId': mentorId,
-      'appointmentDate': tarih,
-      'status': randevuDurum,
+      'appointmentDate': appointmentDate,
+      'status': status,
     };
   }
 }

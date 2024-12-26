@@ -4,23 +4,25 @@ import 'package:randevu_1/model/eslesme_model.dart';
 import 'package:randevu_1/model/mentor_model.dart';
 
 class RandevuService {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  get _firestore => null;
-
-
-  // Aktif randevuları getirme
   Stream<List<Randevu>> getAktifRandevular(String ogrenciId) {
-    return _firestore
-        .collection('Randevular')
-        .where('studentId', isEqualTo: ogrenciId)
-        .where('status', isEqualTo: 'Aktif')
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return Randevu.fromFirestore(doc.data() as Map<String, dynamic>);
-      }).toList();
-    });
+    try {
+      return _firestore
+          .collection('Randevular')
+          .where('ogrenciId', isEqualTo: ogrenciId)
+          .where('randevuDurum', whereIn: ['Beklemede', 'Onaylandı'])
+          .orderBy('tarih', descending: true)
+          .snapshots()
+          .map((snapshot) {
+            return snapshot.docs
+                .map((doc) => Randevu.fromFirestore(doc.data()))
+                .toList();
+          });
+    } catch (e) {
+      print('Hata: $e'); // Hata ayıklama için
+      return Stream.value([]);
+    }
   }
 
   // Geçmiş randevuları getirme
@@ -42,7 +44,7 @@ class RandevuService {
       // Öğrenci ile eşleşen mentörün olup olmadığını kontrol ediyoruz
       final QuerySnapshot eslesmeQuery = await _firestore
           .collection('Eslesmeler')
-          .where('ogrenciId', isEqualTo: randevu.ogrenciId)
+          .where('ogrenciId', isEqualTo: randevu.studentId)
           .get();
 
       if (eslesmeQuery.docs.isEmpty) {
@@ -56,10 +58,10 @@ class RandevuService {
 
       // Mentör ile randevu ekliyoruz
       await _firestore.collection('Randevular').add({
-        'ogrenciId': randevu.ogrenciId,
+        'ogrenciId': randevu.studentId,
         'mentorId': mentorId,
-        'tarih': randevu.tarih,
-        'randevuDurum': randevu.randevuDurum,
+        'tarih': randevu.appointmentDate,
+        'randevuDurum': randevu. status,
       });
 
       print("Randevu başarıyla eklendi.");
@@ -69,3 +71,4 @@ class RandevuService {
     }
   }
 }
+

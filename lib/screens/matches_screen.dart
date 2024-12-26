@@ -1,125 +1,150 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:randevu_1/screens/add_appointment_screen.dart';
-
-Future<List<Map<String, dynamic>>> matchStudentsWithMentors() async {
-  List<Map<String, dynamic>> matches = [];
-  final studentsSnapshot = await FirebaseFirestore.instance.collection('students').get();
-  final mentorsSnapshot = await FirebaseFirestore.instance.collection('mentors').get();
-
-  for (var student in studentsSnapshot.docs) {
-    var studentData = student.data();
-    var studentFields = studentData['ilgiliAlan'] is List
-        ? List<String>.from(studentData['ilgiliAlan'])
-        : [studentData['ilgiliAlan'].toString()];
-
-    for (var mentor in mentorsSnapshot.docs) {
-      var mentorData = mentor.data();
-      var mentorFields = mentorData['uzmanlikAlani'] is List
-          ? List<String>.from(mentorData['uzmanlikAlani'])
-          : [mentorData['uzmanlikAlani'].toString()];
-
-      var commonFields = studentFields.toSet().intersection(mentorFields.toSet());
-      if (commonFields.isNotEmpty) {
-        matches.add({
-          'student': studentData,
-          'mentor': mentorData,
-          'commonFields': commonFields.toList(),
-        });
-      }
-    }
-  }
-  return matches;
-}
 
 class MatchesScreen extends StatelessWidget {
+  final String studentId;
+
+  const MatchesScreen({Key? key, required this.studentId}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        title: Text('Eşleşmeler'),
+        backgroundColor: Colors.purple,
+        title: const Text('Mentörüm', style: TextStyle(color: Colors.white)),
         centerTitle: true,
-        backgroundColor: Colors.blueAccent,
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: matchStudentsWithMentors(),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('matches')
+            .where('student.studentId', isEqualTo: studentId)
+            .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
+
           if (snapshot.hasError) {
             return Center(child: Text('Hata: ${snapshot.error}'));
           }
 
-          final matches = snapshot.data ?? [];
-          if (matches.isEmpty) {
-            return Center(
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(
               child: Text(
-                'Henüz bir eşleşme bulunamadı.',
+                'Henüz bir mentör ile eşleşmediniz.',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             );
           }
 
-          return ListView.builder(
-            itemCount: matches.length,
-            padding: EdgeInsets.all(10),
-            itemBuilder: (context, index) {
-              final match = matches[index];
-              final student = match['student'];
-              final mentor = match['mentor'];
-              final commonFields = match['commonFields'];
+          // İlk eşleşmeyi al
+          final matchData = snapshot.data!.docs.first.data() as Map<String, dynamic>;
+          final mentor = matchData['mentor'] as Map<String, dynamic>;
+          final commonFields = List<String>.from(matchData['commonFields'] ?? []);
 
-              return Card(
-                elevation: 5,
-                margin: EdgeInsets.symmetric(vertical: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.all(15),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Mentör Adı: ${mentor['name']} ${mentor['surname']}',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        'E-posta: ${mentor['email']}',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        'Uzmanlık Alanları: ${mentor['uzmanlikAlani'] is List ? (mentor['uzmanlikAlani'] as List).join(', ') : mentor['uzmanlikAlani']}',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        'Deneyim: ${mentor['deneyim'] ?? 'Bilinmiyor'} yıl',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      SizedBox(height: 10),
-                      Divider(color: Colors.grey),
-                      SizedBox(height: 10),
-                      Text(
-                        'Ortak İlgi Alanları: ${commonFields.join(', ')}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontStyle: FontStyle.italic,
-                          color: Colors.blueGrey,
-                        ),
-                      ),
-
-                ],
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Eşleşen Mentörünüz',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.purple,
                   ),
                 ),
-              );
-            },
+                const SizedBox(height: 20),
+                Card(
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.purple[400]!, Colors.purple[800]!],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircleAvatar(
+                          radius: 60,
+                          backgroundImage: NetworkImage(
+                            mentor['profileImageUrl'] ?? 'https://via.placeholder.com/150',
+                          ),
+                          backgroundColor: Colors.grey[300],
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          '${mentor['ad']} ${mentor['soyad']}',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          mentor['email'] ?? '',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.white70,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 20),
+                        const Divider(color: Colors.white70),
+                        const SizedBox(height: 10),
+                        const Text(
+                          'Uzmanlık Alanı:',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          mentor['uzmanlikAlani'] ?? 'Belirtilmemiş',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.white70,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          'Ortak İlgi Alanları:',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          commonFields.join(', '),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.white70,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           );
         },
       ),
