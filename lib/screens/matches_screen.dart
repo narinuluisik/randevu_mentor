@@ -9,144 +9,177 @@ class MatchesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        backgroundColor: Colors.purple,
-        title: const Text('Mentörüm', style: TextStyle(color: Colors.white)),
+        elevation: 0,
+        backgroundColor: Colors.purple.shade700,
+        title: const Text(
+          'Mentörüm',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         centerTitle: true,
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('matches')
-            .where('student.studentId', isEqualTo: studentId)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.purple.shade50,
+              Colors.white,
+            ],
+          ),
+        ),
+        child: StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('matches')
+              .where('student.studentId', isEqualTo: studentId)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          if (snapshot.hasError) {
-            return Center(child: Text('Hata: ${snapshot.error}'));
-          }
+            if (snapshot.hasError) {
+              return Center(child: Text('Hata: ${snapshot.error}'));
+            }
 
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Text(
-                'Henüz bir mentör ile eşleşmediniz.',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            );
-          }
-
-          // İlk eşleşmeyi al
-          final matchData = snapshot.data!.docs.first.data() as Map<String, dynamic>;
-          final mentor = matchData['mentor'] as Map<String, dynamic>;
-          final commonFields = List<String>.from(matchData['commonFields'] ?? []);
-
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Eşleşen Mentörünüz',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.purple,
-                  ),
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return const Center(
+                child: Text(
+                  'Henüz bir mentör ile eşleşmediniz.',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 20),
-                Card(
-                  elevation: 8,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+              );
+            }
+
+            // İlk eşleşmeyi al
+            final matchData = snapshot.data!.docs.first.data() as Map<String, dynamic>;
+            final mentor = matchData['mentor'] as Map<String, dynamic>;
+            final commonFields = List<String>.from(matchData['commonFields'] ?? []);
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Eşleşen Mentörünüz',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.purple.shade700,
+                      letterSpacing: -0.5,
+                    ),
                   ),
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.purple[400]!, Colors.purple[800]!],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                  const SizedBox(height: 20),
+                  Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircleAvatar(
-                          radius: 60,
-                          backgroundImage: NetworkImage(
-                            mentor['profileImageUrl'] ?? 'https://via.placeholder.com/150',
-                          ),
-                          backgroundColor: Colors.grey[300],
+                    child: Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.purple.shade100.withOpacity(0.9),
+                            Colors.purple.shade50.withOpacity(0.7),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                        const SizedBox(height: 20),
-                        Text(
-                          '${mentor['ad']} ${mentor['soyad']}',
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircleAvatar(
+                            radius: 60,
+                            backgroundColor: Colors.white,
+                            child: CircleAvatar(
+                              radius: 57,
+                              backgroundImage: NetworkImage(
+                                mentor['profileImageUrl'] ??
+                                    'https://via.placeholder.com/150',
+                              ),
+                            ),
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          mentor['email'] ?? '',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.white70,
+                          const SizedBox(height: 20),
+                          Text(
+                            '${mentor['ad']} ${mentor['soyad']}',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.purple.shade900,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 20),
-                        const Divider(color: Colors.white70),
-                        const SizedBox(height: 10),
-                        const Text(
-                          'Uzmanlık Alanı:',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                          const SizedBox(height: 8),
+                          Text(
+                            mentor['email'] ?? '',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.purple.shade700,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          mentor['uzmanlikAlani'] ?? 'Belirtilmemiş',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.white70,
+                          const SizedBox(height: 20),
+                          Divider(color: Colors.purple.shade200),
+                          const SizedBox(height: 16),
+                          _buildInfoSection(
+                            'Uzmanlık Alanı',
+                            mentor['uzmanlikAlani'] ?? 'Belirtilmemiş',
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Ortak İlgi Alanları:',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                          const SizedBox(height: 16),
+                          _buildInfoSection(
+                            'Ortak İlgi Alanları',
+                            commonFields.join(', '),
                           ),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          commonFields.join(', '),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.white70,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoSection(String title, String content) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.purple.shade700,
             ),
-          );
-        },
+          ),
+          const SizedBox(height: 4),
+          Text(
+            content,
+            style: TextStyle(
+              fontSize: 15,
+              color: Colors.purple.shade900,
+            ),
+          ),
+        ],
       ),
     );
   }

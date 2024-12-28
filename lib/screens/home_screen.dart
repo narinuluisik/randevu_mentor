@@ -732,53 +732,114 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                TextButton.icon(
-                  onPressed: () {
-                    if (widget.userId != null) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => MatchesScreen(studentId: widget.userId!),
-                        ),
-                      );
-                    } else {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => LoginScreen()),
-                      );
-                    }
-                  },
-                  icon: Icon(Icons.person_search, color: Colors.purple.shade700),
-                  label: Text(
-                    'Mentörümü Bul',
-                    style: TextStyle(color: Colors.purple.shade700),
-                  ),
-                ),
-                TextButton.icon(
-                  onPressed: () {
-                    if (widget.userId != null) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RandevularimPage(
-                            userId: widget.userId!,
-                            userRole: widget.userRole!,
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: () {
+                      if (widget.userId != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MatchesScreen(studentId: widget.userId!),
                           ),
-                        ),
-                      );
-                    } else {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => LoginScreen()),
-                      );
-                    }
-                  },
-                  icon: Icon(Icons.calendar_today, color: Colors.purple.shade700),
-                  label: Text(
-                    'Randevularım',
-                    style: TextStyle(color: Colors.purple.shade700),
+                        );
+                      } else {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => LoginScreen()),
+                        );
+                      }
+                    },
+                    icon: Icon(Icons.person_search, color: Colors.purple.shade700),
+                    label: Text(
+                      'Mentörümü Bul',
+                      style: TextStyle(color: Colors.purple.shade700),
+                    ),
                   ),
                 ),
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: () {
+                      if (widget.userId != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RandevularimPage(
+                              userId: widget.userId!,
+                              userRole: widget.userRole!,
+                            ),
+                          ),
+                        );
+                      } else {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => LoginScreen()),
+                        );
+                      }
+                    },
+                    icon: Icon(Icons.calendar_today, color: Colors.purple.shade700),
+                    label: Text(
+                      'Randevularım',
+                      style: TextStyle(color: Colors.purple.shade700),
+                    ),
+                  ),
+                ),
+                if (widget.userId != null)
+                  IconButton(
+                    onPressed: () async {
+                      bool? confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            title: Row(
+                              children: [
+                                Icon(
+                                  Icons.logout_rounded,
+                                  color: Colors.purple.shade700,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 8),
+                                const Text('Çıkış Yap'),
+                              ],
+                            ),
+                            content: const Text('Çıkış yapmak istediğinizden emin misiniz?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(false),
+                                child: Text(
+                                  'İptal',
+                                  style: TextStyle(color: Colors.purple.shade700),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(true),
+                                child: Text(
+                                  'Çıkış Yap',
+                                  style: TextStyle(color: Colors.red.shade700),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+
+                      if (confirm == true) {
+                        await FirebaseAuth.instance.signOut();
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                            builder: (context) => HomeScreen(
+                              userId: null,
+                              userRole: null,
+                            ),
+                          ),
+                          (Route<dynamic> route) => false,
+                        );
+                      }
+                    },
+                    icon: Icon(Icons.logout_rounded, color: Colors.purple.shade700),
+                  ),
               ],
             ),
           ),

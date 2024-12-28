@@ -98,62 +98,92 @@ class _RandevularimPageState extends State<RandevularimPage> {
 
   Widget _buildAppointmentCard(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    
-    // Tarih kontrolü
-    final Timestamp? timestamp = data['appointmentDate'] as Timestamp?;
-    if (timestamp == null) {
-      return const Card(
-        child: ListTile(title: Text('Geçersiz randevu tarihi')),
-      );
-    }
-
-    final DateTime appointmentDate = timestamp.toDate();
+    final DateTime appointmentDate = (data['appointmentDate'] as Timestamp).toDate();
     final String formattedDate = DateFormat('dd/MM/yyyy HH:mm').format(appointmentDate);
-    
-    // Mentor/Student bilgisi
-    final String displayName = widget.userRole == 'student' 
+    final String displayName = widget.userRole == 'student'
         ? '${_mentorData?['ad'] ?? 'Mentör'} ${_mentorData?['soyad'] ?? ''}'
         : data['studentName'] ?? 'Öğrenci';
-    
     final String status = data['status'] ?? 'Belirsiz';
 
     return Card(
-      margin: const EdgeInsets.all(8),
-      elevation: 4,
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Colors.purple,
-          child: Text(
-            (displayName.isNotEmpty ? displayName[0] : '?').toUpperCase(),
-            style: const TextStyle(color: Colors.white),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.white,
+              Colors.purple.shade50.withOpacity(0.3),
+            ],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
           ),
+          borderRadius: BorderRadius.circular(15),
         ),
-        title: Text(
-          displayName,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Text('Tarih: $formattedDate'),
-            Text(
-              'Durum: $status',
+        child: ListTile(
+          contentPadding: const EdgeInsets.all(16),
+          leading: CircleAvatar(
+            radius: 25,
+            backgroundColor: Colors.purple.shade100,
+            child: Text(
+              (displayName.isNotEmpty ? displayName[0] : '?').toUpperCase(),
               style: TextStyle(
-                color: status == 'Aktif' ? Colors.green : Colors.grey,
+                color: Colors.purple.shade700,
+                fontWeight: FontWeight.bold,
               ),
             ),
-          ],
+          ),
+          title: Text(
+            displayName,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.calendar_today, 
+                       size: 16, 
+                       color: Colors.purple.shade300),
+                  const SizedBox(width: 8),
+                  Text(formattedDate),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(Icons.info_outline, 
+                       size: 16, 
+                       color: Colors.purple.shade300),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Durum: $status',
+                    style: TextStyle(
+                      color: status == 'Aktif' 
+                          ? Colors.green.shade700 
+                          : Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          trailing: status == 'Aktif'
+              ? IconButton(
+                  icon: Icon(Icons.cancel, 
+                           color: Colors.red.shade400),
+                  onPressed: () => _cancelAppointment(doc.id),
+                )
+              : null,
         ),
-        trailing: status == 'Aktif'
-            ? IconButton(
-                icon: const Icon(Icons.cancel, color: Colors.red),
-                onPressed: () => _cancelAppointment(doc.id),
-              )
-            : null,
       ),
     );
   }
@@ -175,81 +205,104 @@ class _RandevularimPageState extends State<RandevularimPage> {
     }
   }
 
+  Widget _buildAppointmentList(String status) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _getAppointmentsStream(status),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(
+            child: Text('Bir hata oluştu: ${snapshot.error}'),
+          );
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.calendar_today_outlined,
+                  size: 64,
+                  color: Colors.purple.shade200,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  status == 'Aktif' 
+                      ? 'Aktif randevunuz bulunmamaktadır'
+                      : 'Geçmiş randevunuz bulunmamaktadır',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.purple.shade700,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          itemCount: snapshot.data!.docs.length,
+          itemBuilder: (context, index) {
+            return _buildAppointmentCard(snapshot.data!.docs[index]);
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
+          elevation: 0,
           title: Text(
             widget.userRole == 'mentor' ? "Mentorluk Randevularım" : "Randevularım",
-            style: const TextStyle(color: Colors.white),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-          backgroundColor: Colors.purple,
-          bottom: const TabBar(
-            tabs: [
+          backgroundColor: Colors.purple.shade700,
+          bottom: TabBar(
+            tabs: const [
               Tab(text: "Aktif Randevular"),
               Tab(text: "Geçmiş Randevular"),
             ],
             indicatorColor: Colors.white,
             labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
+            labelStyle: const TextStyle(fontWeight: FontWeight.w600),
           ),
         ),
-        body: TabBarView(
-          children: [
-            // Aktif randevular
-            StreamBuilder<QuerySnapshot>(
-              stream: _getAppointmentsStream('Aktif'),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return Center(child: Text('Hata: ${snapshot.error}'));
-                }
-
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(
-                    child: Text('Aktif randevunuz bulunmamaktadır.'),
-                  );
-                }
-
-                return ListView.builder(
-                  itemCount: snapshot.data!.docs.length,
-                  itemBuilder: (context, index) {
-                    return _buildAppointmentCard(snapshot.data!.docs[index]);
-                  },
-                );
-              },
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.purple.shade50,
+                Colors.white,
+              ],
             ),
-            // Geçmiş randevular
-            StreamBuilder<QuerySnapshot>(
-              stream: _getAppointmentsStream('Geçmiş'),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return Center(child: Text('Hata: ${snapshot.error}'));
-                }
-
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(
-                    child: Text('Geçmiş randevunuz bulunmamaktadır.'),
-                  );
-                }
-
-                return ListView.builder(
-                  itemCount: snapshot.data!.docs.length,
-                  itemBuilder: (context, index) {
-                    return _buildAppointmentCard(snapshot.data!.docs[index]);
-                  },
-                );
-              },
-            ),
-          ],
+          ),
+          child: TabBarView(
+            children: [
+              _buildAppointmentList('Aktif'),
+              _buildAppointmentList('Geçmiş'),
+            ],
+          ),
         ),
         floatingActionButton: widget.userRole == 'student'
             ? FloatingActionButton(
@@ -264,7 +317,7 @@ class _RandevularimPageState extends State<RandevularimPage> {
                     ),
                   );
                 },
-                backgroundColor: Colors.purple,
+                backgroundColor: Colors.purple.shade700,
                 child: const Icon(Icons.add, color: Colors.white),
               )
             : null,
