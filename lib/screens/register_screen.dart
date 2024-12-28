@@ -28,15 +28,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       try {
         // Firebase Auth ile kullanıcı oluştur
-        UserCredential userCredential = 
-            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        UserCredential userCredential =
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
 
         // Kullanıcı bilgilerini hazırla
         Map<String, dynamic> userData = {
-          'email': _emailController.text.trim(),
+          'eposta': _emailController.text.trim(),
+          'sifre': _passwordController.text.trim(), // Şifreyi kaydet
           'ad': _adController.text.trim(),
           'soyad': _soyadController.text.trim(),
           'createdAt': FieldValue.serverTimestamp(),
@@ -54,19 +55,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
           await FirebaseFirestore.instance
               .collection('mentors')
               .doc(userCredential.user!.uid)
-              .set(userData);
+              .set({
+            'mentorId': userCredential.user!.uid,
+            ...userData,
+          });
         } else {
           // Öğrenci bilgilerini Firestore'a kaydet
           await FirebaseFirestore.instance
               .collection('students')
               .doc(userCredential.user!.uid)
-              .set(userData);
+              .set({
+            'studentId': userCredential.user!.uid,
+            ...userData,
+          });
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Kayıt başarılı! Giriş yapabilirsiniz.')),
         );
-        
+
         Navigator.pop(context); // Giriş ekranına dön
       } on FirebaseAuthException catch (e) {
         String errorMessage = 'Bir hata oluştu';
@@ -224,7 +231,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     validator: (value) {
-                      if (_selectedRole == 'mentor' && 
+                      if (_selectedRole == 'mentor' &&
                           (value == null || value.isEmpty)) {
                         return 'Uzmanlık alanı gerekli';
                       }
@@ -242,7 +249,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     validator: (value) {
-                      if (_selectedRole == 'mentor' && 
+                      if (_selectedRole == 'mentor' &&
                           (value == null || value.isEmpty)) {
                         return 'Sektör gerekli';
                       }
@@ -277,12 +284,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: _isLoading
                       ? CircularProgressIndicator(color: Colors.white)
                       : Text(
-                          'Kayıt Ol',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                    'Kayıt Ol',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),

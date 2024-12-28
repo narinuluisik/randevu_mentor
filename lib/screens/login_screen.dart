@@ -39,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
           if (studentData['eposta'] == _emailController.text.trim() &&
               studentData['sifre'] == _passwordController.text) {
             print('Öğrenci bulundu: ${studentData['ad']}');
-            
+
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
                 builder: (context) => HomeScreen(
@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   userRole: 'student',
                 ),
               ),
-              (Route<dynamic> route) => false,
+                  (Route<dynamic> route) => false,
             );
             return;
           }
@@ -67,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
           if (mentorData['email'] == _emailController.text.trim() &&
               mentorData['sifre'] == _passwordController.text) {
             print('Mentor bulundu: ${mentorData['ad']}');
-            
+
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
                 builder: (context) => HomeScreen(
@@ -75,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   userRole: 'mentor',
                 ),
               ),
-              (Route<dynamic> route) => false,
+                  (Route<dynamic> route) => false,
             );
             return;
           }
@@ -217,12 +217,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: _isLoading
                       ? CircularProgressIndicator(color: Colors.white)
                       : Text(
-                          'Giriş Yap',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                    'Giriş Yap',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
                 SizedBox(height: 16),
                 // Kayıt ol butonu

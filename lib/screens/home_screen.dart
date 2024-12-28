@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:randevu_1/screens/register_screen.dart';
+import 'package:randevu_1/screens/student_profile_screen.dart';
 import 'appointment_screen.dart';
 import 'matches_screen.dart';
 import 'login_screen.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'profile_screen.dart';
+
 
 class HomeScreen extends StatefulWidget {
   final String? userId;
   final String? userRole;
 
   const HomeScreen({
-    Key? key, 
-    this.userId, 
+    Key? key,
+    this.userId,
     this.userRole,
   }) : super(key: key);
 
@@ -500,7 +501,7 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
                 5,
-                (index) => IconButton(
+                    (index) => IconButton(
                   icon: Icon(
                     index < _userRating ? Icons.star : Icons.star_border,
                     color: Colors.amber,
@@ -663,60 +664,74 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Mentor App', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.purple,
         elevation: 2,
-        actions: widget.userId == null
-            ? [
-                // Giriş yapmamış kullanıcı için butonlar
-                TextButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => LoginScreen()),
-                    );
-                  },
-                  icon: const Icon(Icons.login, color: Colors.white),
-                  label: const Text(
-                    'Giriş',
-                    style: TextStyle(color: Colors.white),
-                  ),
+        actions: widget.userId == null 
+          ? [
+              // Giriş yapmamış kullanıcı için butonlar
+              TextButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                  );
+                },
+                icon: const Icon(Icons.login, color: Colors.white),
+                label: const Text(
+                  'Giriş',
+                  style: TextStyle(color: Colors.white),
                 ),
-                const SizedBox(width: 8),
-                TextButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => RegisterScreen()),
-                    );
-                  },
-                  icon: const Icon(Icons.person_add, color: Colors.white),
-                  label: const Text(
-                    'Kayıt',
-                    style: TextStyle(color: Colors.white),
-                  ),
+              ),
+              const SizedBox(width: 8),
+              TextButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RegisterScreen()),
+                  );
+                },
+                icon: const Icon(Icons.person_add, color: Colors.white),
+                label: const Text(
+                  'Kayıt',
+                  style: TextStyle(color: Colors.white),
                 ),
-                const SizedBox(width: 8),
-              ]
-            : [
-                // Giriş yapmış kullanıcı için profil butonu
-                TextButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ProfileScreen(
-                          userId: widget.userId!,
-                          userRole: widget.userRole!,
-                        ),
+              ),
+              const SizedBox(width: 8),
+            ]
+          : [
+              // Giriş yapmış kullanıcı için profil butonu
+              TextButton.icon(
+                onPressed: () async {
+                  final studentDoc = await FirebaseFirestore.instance
+                      .collection('students')
+                      .where('studentId', isEqualTo: widget.userId)
+                      .get();
+
+                if (studentDoc.docs.isNotEmpty) {
+                  final studentDocId = studentDoc.docs.first.id;
+
+                  if (!context.mounted) return;
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StudentProfileScreen(
+                        studentId: studentDocId,
                       ),
-                    );
-                  },
-                  icon: const Icon(Icons.account_circle, color: Colors.white),
-                  label: const Text(
-                    'Profil',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-                const SizedBox(width: 8),
-              ],
+                    ),
+                  );
+                } else {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Öğrenci bilgisi bulunamadı')),
+                  );
+                }
+              },
+              icon: const Icon(Icons.account_circle, color: Colors.white),
+              label: const Text(
+                'Profil',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48.0),
           child: Container(
@@ -834,7 +849,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               userRole: null,
                             ),
                           ),
-                          (Route<dynamic> route) => false,
+                              (Route<dynamic> route) => false,
                         );
                       }
                     },
@@ -889,7 +904,7 @@ class _ReviewCardState extends State<ReviewCard> {
       maxLines: _maxLines,
       textDirection: TextDirection.ltr,
     )..layout(maxWidth: MediaQuery.of(context).size.width - 48);
-    
+
     _hasOverflow = _textPainter.didExceedMaxLines;
     setState(() {}); // UI'ı güncelle
   }
@@ -933,7 +948,7 @@ class _ReviewCardState extends State<ReviewCard> {
                       Row(
                         children: List.generate(
                           5,
-                          (index) => Icon(
+                              (index) => Icon(
                             index < (widget.data['rating'] ?? 0)
                                 ? Icons.star
                                 : Icons.star_border,

@@ -6,21 +6,24 @@ import 'package:randevu_1/model/mentor_model.dart';
 class RandevuService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  // Aktif randevuları getirme
   Stream<List<Randevu>> getAktifRandevular(String ogrenciId) {
     try {
       return _firestore
           .collection('Randevular')
-          .where('ogrenciId', isEqualTo: ogrenciId)
-          .where('randevuDurum', whereIn: ['Beklemede', 'Onaylandı'])
-          .orderBy('tarih', descending: true)
+          .where('studentId', isEqualTo: ogrenciId)
+          .where('status', whereIn: ['Beklemede', 'Onaylandı'])
+          .orderBy('appointmentDate', descending: true)
           .snapshots()
           .map((snapshot) {
-            return snapshot.docs
-                .map((doc) => Randevu.fromFirestore(doc.data()))
-                .toList();
+            return snapshot.docs.map((doc) {
+              final data = doc.data();
+              data['id'] = doc.id;
+              return Randevu.fromFirestore(data);
+            }).toList();
           });
     } catch (e) {
-      print('Hata: $e'); // Hata ayıklama için
+      print('Hata: $e');
       return Stream.value([]);
     }
   }
@@ -30,25 +33,28 @@ class RandevuService {
     return _firestore
         .collection('Randevular')
         .where('studentId', isEqualTo: ogrenciId)
-        .where('status', isEqualTo: 'Geçmiş')
+        .where('status', isEqualTo: 'Tamamlandı')
+        .orderBy('appointmentDate', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return Randevu.fromFirestore(doc.data() as Map<String, dynamic>);
-      }).toList();
-    });
+          return snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return Randevu.fromFirestore(data);
+          }).toList();
+        });
   }
-  // Eşleşen mentor ile randevu ekleme fonksiyonu
+
+  // Randevu ekleme fonksiyonu
   Future<void> addRandevu(Randevu randevu) async {
     try {
       // Öğrenci ile eşleşen mentörün olup olmadığını kontrol ediyoruz
       final QuerySnapshot eslesmeQuery = await _firestore
           .collection('Eslesmeler')
-          .where('ogrenciId', isEqualTo: randevu.studentId)
+          .where('studentId', isEqualTo: randevu.studentId)
           .get();
 
       if (eslesmeQuery.docs.isEmpty) {
-        // Eşleşme bulunamadıysa
         print("Öğrenci için eşleşen mentör bulunamadı.");
         throw Exception("Öğrenci için eşleşen mentör bulunamadı.");
       }
@@ -58,16 +64,16 @@ class RandevuService {
 
       // Mentör ile randevu ekliyoruz
       await _firestore.collection('Randevular').add({
-        'ogrenciId': randevu.studentId,
+        'studentId': randevu.studentId,
         'mentorId': mentorId,
-        'tarih': randevu.appointmentDate,
-        'randevuDurum': randevu. status,
+        'appointmentDate': randevu.appointmentDate,
+        'status': randevu.status,
       });
 
       print("Randevu başarıyla eklendi.");
     } catch (e) {
       print("Randevu eklenirken hata oluştu: $e");
-      throw e; // Hata durumunda exception fırlatıyoruz
+      throw e;
     }
   }
 }

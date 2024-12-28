@@ -15,9 +15,9 @@ class Randevu {
     required this.status,
   });
 
-  factory Randevu.fromFirestore(Map<String, dynamic> data, {String? id}) {
+  factory Randevu.fromFirestore(Map<String, dynamic> data) {
     return Randevu(
-      id: id ?? data['id'] ?? '',
+      id: data['id'] ?? '',
       studentId: data['studentId'] ?? '',
       mentorId: data['mentorId'] ?? '',
       appointmentDate: (data['appointmentDate'] as Timestamp).toDate(),
